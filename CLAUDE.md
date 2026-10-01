@@ -18,12 +18,15 @@
 
 ## 환경
 - Expo SDK 54 고정 (Xcode 16.2). climbdex와 같은 함정: 로컬 모듈 설정은 `platforms: ["ios"]`, podspec 타깃 15.1, pod는 homebrew `pod`
-- 읽어주기는 expo-speech, 녹음·재생은 expo-audio, 저장은 expo-sqlite, 알림은 expo-notifications 로컬 스케줄(3단계에서 설치)
+- 읽어주기는 expo-speech, 녹음·재생은 expo-audio, 저장은 expo-sqlite, 알림은 expo-notifications 로컬 스케줄(서버 푸시 아님)
 - 빌드: `npx expo run:ios --device <UDID>`. Metro: `npm start`
 - 함정: 8081에 climbdex Metro가 떠 있으면 `expo run:ios`가 자기 Metro를 띄우지 않고 앱이 climbdex 번들을 받아 "App entry not found"가 뜬다. climbdex Metro를 끄거나 `--port`를 바꾼다
-- 함정: 회사 맥 시뮬레이터에서는 녹음이 안 된다("Failed to prepare recorder", 시뮬레이터 오디오 입력 문제). 녹음·재생은 실기기에서 확인한다
+- 함정: 프로비저닝 프로파일이 없는 맥에서 첫 실기기 빌드는 `expo run:ios`가 "No profiles for ... were found"로 실패한다. `cd ios && xcodebuild -workspace recast.xcworkspace -scheme recast -configuration Debug -destination 'id=<UDID>' -allowProvisioningUpdates build`로 한 번 빌드하면 프로파일이 생긴다(무료 팀이라 7일마다 만료)
+- IMPORTANT: 확인은 연결된 실기기로 한다. 시뮬레이터를 열지 않는다(테오 요청). 회사 맥 시뮬레이터에서는 녹음도 안 된다
+- 함정: `plugins/withoutPushEntitlement.js`를 `app.json`에서 빼면 expo-notifications가 넣는 푸시 권한 때문에 무료 팀 실기기 서명이 실패한다
+- 설치: `xcrun devicectl device install app --device <기기 ID> <DerivedData>/Build/Products/Debug-iphoneos/recast.app`
 - 함정: Expo 패키지는 `npx expo install`로 넣는다. `npm install`이나 peer 자동 설치는 SDK와 안 맞는 버전(57.x)을 끌어와 네이티브 모듈이 중복된다. 설치 후 `npx expo-doctor`
-- 파서 테스트: `npm test` (Node 내장 러너, `src/*.test.ts`). 타입 검사: `npm run typecheck` (테스트 파일은 제외)
+- 테스트(파서, 복습 날짜 계산): `npm test` (Node 내장 러너, `src/*.test.ts`). 타입 검사: `npm run typecheck` (테스트 파일은 제외)
 
 ## 세션 규칙
 - 두 기기(회사 맥·개인 노트북)에서 번갈아 작업. 결정은 대화가 아니라 `docs/`에 남긴다
