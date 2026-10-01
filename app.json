@@ -12,8 +12,14 @@
     },
     "plugins": [
       "expo-sqlite",
-      "expo-audio",
-      "expo-asset"
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "따라 말한 문장을 녹음해 다시 듣기 위해 마이크가 필요해요."
+        }
+      ],
+      "expo-asset",
+      "expo-font"
     ],
     "scheme": "recast"
   }

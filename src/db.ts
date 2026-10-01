@@ -48,8 +48,16 @@ export function saveSession(items: ParsedItem[]) {
   });
 }
 
-export function getCounts() {
-  return db.getFirstSync<{ sessions: number; items: number }>(
-    'SELECT (SELECT COUNT(*) FROM sessions) AS sessions, (SELECT COUNT(*) FROM items) AS items',
-  )!;
+export type SavedItem = ParsedItem & { id: number; due: string };
+export type SavedSession = { id: number; date: string; items: SavedItem[] };
+
+export function getSessions(): SavedSession[] {
+  const sessions = db.getAllSync<{ id: number; date: string }>('SELECT id, date FROM sessions ORDER BY id DESC');
+  const items = db.getAllSync<SavedItem & { session_id: number }>(
+    'SELECT id, session_id, q, me, native, pattern, due FROM items ORDER BY id',
+  );
+  return sessions.map((session) => ({
+    ...session,
+    items: items.filter((item) => item.session_id === session.id),
+  }));
 }
