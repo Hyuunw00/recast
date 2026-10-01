@@ -21,6 +21,8 @@
 - 읽어주기는 expo-speech, 녹음·재생은 expo-audio, 저장은 expo-sqlite, 알림은 expo-notifications 로컬 스케줄(3단계에서 설치)
 - 빌드: `npx expo run:ios --device <UDID>`. Metro: `npm start`
 - 함정: 8081에 climbdex Metro가 떠 있으면 `expo run:ios`가 자기 Metro를 띄우지 않고 앱이 climbdex 번들을 받아 "App entry not found"가 뜬다. climbdex Metro를 끄거나 `--port`를 바꾼다
+- 함정: 회사 맥 시뮬레이터에서는 녹음이 안 된다("Failed to prepare recorder", 시뮬레이터 오디오 입력 문제). 녹음·재생은 실기기에서 확인한다
+- 함정: Expo 패키지는 `npx expo install`로 넣는다. `npm install`이나 peer 자동 설치는 SDK와 안 맞는 버전(57.x)을 끌어와 네이티브 모듈이 중복된다. 설치 후 `npx expo-doctor`
 - 파서 테스트: `npm test` (Node 내장 러너, `src/*.test.ts`). 타입 검사: `npm run typecheck` (테스트 파일은 제외)
 
 ## 세션 규칙
