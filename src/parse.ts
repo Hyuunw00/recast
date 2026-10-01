@@ -3,7 +3,7 @@ export type ParseResult = { items: ParsedItem[]; none: boolean };
 
 const LABEL = /^(?:[-*•]\s*)?(?:\d+[.)]\s*)?\**(Q|Me|Native|Pattern)\**\s*:\**\s*(.*)$/i;
 const LEGACY = /^(?:[-*•]\s*)?["“](.+)["”]\s*(?:→|->)\s*(.+)$/;
-const NONE = /^(?:[-*•]\s*)?none\b(?!.*:)/i;
+const NONE = /^(?:#+\s*)?(?:막힌 것\s*)?(?:[-*•]\s*)?none\b(?!.*:)/i;
 
 function unquote(s: string) {
   return s.trim().replace(/^["“”]+|["“”]+$/g, '').trim();
@@ -21,8 +21,11 @@ export function parse(text: string): ParseResult {
     current = {};
   };
 
-  for (const raw of text.split(/\r?\n/)) {
-    const line = raw.trim();
+  const separated = text
+    .replace(/[ \t]+(?:\d{1,2}[.)][ \t]*)?(?=\**(?:Q|Me|Native|Pattern)\**:)/g, '\n')
+    .replace(/[ \t]+(?=["“][^"”\n]*["”]\s*(?:→|->))/g, '\n');
+  for (const raw of separated.split(/\r\n|[\n\r\u2028\u2029]/)) {
+    const line = raw.replace(/[\u200b-\u200d\u2060\ufeff]/g, '').trim();
     const legacy = line.match(LEGACY);
     if (legacy) {
       flush();
