@@ -19,7 +19,9 @@
         }
       ],
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      "./plugins/withoutPushEntitlement",
+      "@react-native-community/datetimepicker"
     ],
     "scheme": "recast"
   }

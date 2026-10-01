@@ -1,66 +1,18 @@
-import {
-  RecordingPresets,
-  requestRecordingPermissionsAsync,
-  setAudioModeAsync,
-  useAudioPlayer,
-  useAudioRecorder,
-} from 'expo-audio';
-import { File } from 'expo-file-system';
-import * as Speech from 'expo-speech';
-import { useState } from 'react';
-import { Alert, SectionList, StyleSheet, Text, View } from 'react-native';
+import { SectionList, StyleSheet, Text, View } from 'react-native';
 
-import { recordingFile } from './audio';
 import type { SavedSession } from './db';
 import { ItemCard } from './ItemCard';
 import { formatDate, ink, sub } from './theme';
+import { useRecorder } from './useRecorder';
 
 export function History({ sessions }: { sessions: SavedSession[] }) {
   const total = sessions.reduce((sum, session) => sum + session.items.length, 0);
-  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
-  const player = useAudioPlayer();
-  const [recordingId, setRecordingId] = useState<number | null>(null);
-
-  const start = async (id: number) => {
-    const { granted } = await requestRecordingPermissionsAsync();
-    if (!granted) {
-      Alert.alert('마이크 권한이 필요해요', '설정 > recast에서 마이크를 켜 주세요');
-      return;
-    }
-    Speech.stop();
-    player.pause();
-    try {
-      await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
-      await recorder.prepareToRecordAsync();
-      recorder.record();
-      setRecordingId(id);
-    } catch {
-      await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true });
-      Alert.alert('녹음을 시작하지 못했어요', '잠시 뒤에 다시 눌러 주세요');
-    }
-  };
-
-  const stop = async (id: number) => {
-    await recorder.stop();
-    await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true });
-    if (recorder.uri) {
-      const saved = recordingFile(id);
-      if (saved.exists) saved.delete();
-      new File(recorder.uri).move(saved);
-    }
-    setRecordingId(null);
-  };
-
-  const play = (id: number) => {
-    Speech.stop();
-    player.replace({ uri: recordingFile(id).uri });
-    player.play();
-  };
+  const recorder = useRecorder();
 
   return (
     <SectionList
       sections={sessions.map((session) => ({ session, data: session.items }))}
-      extraData={recordingId}
+      extraData={recorder.state}
       keyExtractor={(item) => String(item.id)}
       contentContainerStyle={styles.content}
       stickySectionHeadersEnabled={false}
@@ -85,19 +37,7 @@ export function History({ sessions }: { sessions: SavedSession[] }) {
           </Text>
         </View>
       )}
-      renderItem={({ item }) => (
-        <ItemCard
-          item={item}
-          due={item.due}
-          record={{
-            recording: recordingId === item.id,
-            disabled: recordingId !== null && recordingId !== item.id,
-            hasRecording: recordingFile(item.id).exists,
-            onRecord: () => (recordingId === item.id ? stop(item.id) : start(item.id)),
-            onPlay: () => play(item.id),
-          }}
-        />
-      )}
+      renderItem={({ item }) => <ItemCard item={item} due={item.due} record={recorder.controls(item.id)} />}
     />
   );
 }
